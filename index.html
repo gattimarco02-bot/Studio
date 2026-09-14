@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tedesco Vocab Trainer</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --primary: #1f3a60;
+      --primary-hover: #162a45;
+      --accent: #d97706;
+      --success: #15803d;
+      --error: #b91c1c;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg-color);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .status-bar {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .reload-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--primary);
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .reload-btn:hover {
+      background-color: #e2e8f0;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+    }
+
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mode-select {
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      background: white;
+    }
+
+    .prompt-box {
+      text-align: center;
+      margin: 16px 0 24px 0;
+    }
+
+    .prompt-type {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .prompt-word {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .prompt-extra {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .inputs-grid {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .inputs-grid.triple {
+      grid-template-columns: 85px 1fr 90px;
+    }
+
+    .inputs-grid.single {
+      grid-template-columns: 1fr;
+    }
+
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .input-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .input-field input {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .input-field input:focus {
+      border-color: var(--primary);
+    }
+
+    .special-chars {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .char-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--primary);
+    }
+
+    .char-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .action-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .feedback-box {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      background: #dcfce7;
+      color: var(--success);
+      border: 1px solid #86efac;
+      display: block;
+    }
+
+    .feedback-box.wrong {
+      background: #fee2e2;
+      color: var(--error);
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+
+    .solution-details {
+      margin-top: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .stats-card {
+      margin-top: 10px;
+    }
+
+    .stats-card h3 {
+      font-size: 1rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reset-stats {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+    }
+
+    .error-list {
+      list-style: none;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .error-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+
+    .error-badge {
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 10px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 480px) {
+      .inputs-grid.triple {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🇩🇪 Tedesco Vocab Trainer</h1>
+    <div class="status-bar">
+      <span id="sheet-status">Caricamento foglio...</span>
+      <button class="reload-btn" onclick="fetchData()">🔄 Ricarica Dati</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="options-row">
+      <div class="option-group">
+        <label for="mode-select"><strong>Modalità:</strong></label>
+        <select id="mode-select" class="mode-select" onchange="switchMode()">
+          <option value="it-de">Italiano ➔ Tedesco</option>
+          <option value="de-it">Tedesco ➔ Italiano</option>
+        </select>
+      </div>
+
+      <div class="option-group" id="de-options" style="display: none;">
+        <label><input type="checkbox" id="ask-art" onchange="renderInputFields()"> + Articolo</label>
+        <label><input type="checkbox" id="ask-plur" onchange="renderInputFields()"> + Plurale</label>
+      </div>
+    </div>
+
+    <div id="quiz-area">
+      <div class="prompt-box">
+        <div class="prompt-type" id="prompt-type">VOCABOLO</div>
+        <div class="prompt-word" id="prompt-word">Caricamento...</div>
+        <div class="prompt-extra" id="prompt-extra"></div>
+      </div>
+
+      <div id="inputs-container" class="inputs-grid triple"></div>
+
+      <div class="special-chars">
+        <button type="button" class="char-btn" onclick="insertChar('ä')">ä</button>
+        <button type="button" class="char-btn" onclick="insertChar('ö')">ö</button>
+        <button type="button" class="char-btn" onclick="insertChar('ü')">ü</button>
+        <button type="button" class="char-btn" onclick="insertChar('ß')">ß</button>
+        <button type="button" class="char-btn" onclick="insertChar('Ä')">Ä</button>
+        <button type="button" class="char-btn" onclick="insertChar('Ö')">Ö</button>
+        <button type="button" class="char-btn" onclick="insertChar('Ü')">Ü</button>
+      </div>
+
+      <button class="action-btn" id="submit-btn" onclick="handleSubmit()">Verifica</button>
+
+      <div id="feedback" class="feedback-box"></div>
+    </div>
+  </div>
+
+  <div class="card stats-card">
+    <h3>
+      <span>⚠️ Vocaboli da ripassare (più errori)</span>
+      <button class="reset-stats" onclick="clearStats()">Azzera statistiche</button>
+    </h3>
+    <ul id="error-list" class="error-list">
+      <li style="color: var(--text-muted); padding: 8px;">Nessun errore registrato finora. Ottimo lavoro!</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSix0Wy8XFPj2MNK7qpicJ-1bNLpOheeHlb7BReCNcQrHLPuLH7YIuPxNjyFDrAmy4bo02-VbYRAiOx/pub?gid=1805719705&single=true&output=csv";
+
+  let vocabList = [];
+  let currentVocab = null;
+  let isAnswering = true;
+  let lastFocusedInput = null;
+
+  // Statistiche memorizzate in localStorage
+  // formato: { "chiave_vocabolo": { wrong: 0, correct: 0, seen: 0 } }
+  let stats = JSON.parse(localStorage.getItem('de_quiz_stats') || '{}');
+
+  function saveStats() {
+    localStorage.setItem('de_quiz_stats', JSON.stringify(stats));
+    renderErrorList();
+  }
+
+  function clearStats() {
+    if (confirm("Vuoi davvero azzerare tutte le statistiche degli errori?")) {
+      stats = {};
+      saveStats();
+    }
+  }
+
+  // Parse CSV gestendo eventuali virgolette
+  function parseCSV(text) {
+    const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+    if (lines.length <= 1) return [];
+
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const row = [];
+      let inQuote = false;
+      let field = '';
+      const line = lines[i];
+
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+          if (inQuote && line[j + 1] === '"') {
+            field += '"';
+            j++;
+          } else {
+            inQuote = !inQuote;
+          }
+        } else if (char === ',' && !inQuote) {
+          row.push(field.trim());
+          field = '';
+        } else {
+          field += char;
+        }
+      }
+      row.push(field.trim());
+
+      const [italiano = '', articolo = '', singolare = '', plurale = '', note = ''] = row;
+
+      if (italiano || singolare) {
+        result.push({
+          id: (singolare || italiano).toLowerCase(),
+          italiano: italiano.trim(),
+          articolo: articolo.trim().toLowerCase(),
+          singolare: singolare.trim(),
+          plurale: plurale.trim(),
+          note: note.trim(),
+          isNoun: (articolo.trim() !== '' || /^[A-ZÄÖÜ]/.test(singolare.trim()))
+        });
+      }
+    }
+    return result;
+  }
+
+  async function fetchData() {
+    const statusEl = document.getElementById('sheet-status');
+    statusEl.textContent = 'Aggiornamento da Google...';
+    try {
+      // Aggiungiamo un timestamp per evitare cache nel browser
+      const res = await fetch(`${CSV_URL}&_t=${Date.now()}`);
+      if (!res.ok) throw new Error("Errore durante il download");
+      const text = await res.text();
+      vocabList = parseCSV(text);
+      statusEl.textContent = `✅ ${vocabList.length} vocaboli caricati`;
+      renderErrorList();
+      nextQuestion();
+    } catch (e) {
+      statusEl.textContent = '❌ Errore caricamento foglio';
+      console.error(e);
+    }
+  }
+
+  // Algoritmo di estrazione pesata (più errori = più probabilità di uscire)
+  function selectNextVocab() {
+    if (vocabList.length === 0) return null;
+
+    const weights = vocabList.map(item => {
+      const s = stats[item.id] || { wrong: 0, correct: 0 };
+      // Peso base 1 + 3 punti per ogni errore commesso - 0.2 punti per ogni risposta corretta
+      let w = 1 + (s.wrong * 3) - (s.correct * 0.2);
+      return Math.max(0.2, w);
+    });
+
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    let random = Math.random() * totalWeight;
+
+    for (let i = 0; i < vocabList.length; i++) {
+      if (random < weights[i]) return vocabList[i];
+      random -= weights[i];
+    }
+    return vocabList[vocabList.length - 1];
+  }
+
+  function switchMode() {
+    const mode = document.getElementById('mode-select').value;
+    document.getElementById('de-options').style.display = (mode === 'de-it') ? 'flex' : 'none';
+    nextQuestion();
+  }
+
+  function renderInputFields() {
+    const mode = document.getElementById('mode-select').value;
+    const container = document.getElementById('inputs-container');
+    container.innerHTML = '';
+
+    if (mode === 'it-de') {
+      if (currentVocab && currentVocab.isNoun) {
+        container.className = 'inputs-grid triple';
+        container.innerHTML = `
+          <div class="input-field">
+            <label>Articolo</label>
+            <input type="text" id="input-art" placeholder="der/die/das" autocomplete="off" autocorrect="off" autocapitalize="none">
+          </div>
+          <div class="input-field">
+            <label>Singolare</label>
+            <input type="text" id="input-sing" placeholder="Parola con Maiuscola" autocomplete="off" autocorrect="off">
+          </div>
+          <div class="input-field">
+            <label>Plurale</label>
+            <input type="text" id="input-plur" placeholder="es. -e / ¨-e / x" autocomplete="off" autocorrect="off">
+          </div>
+        `;
+      } else {
+        container.className = 'inputs-grid single';
+        container.innerHTML = `
+          <div class="input-field">
+            <label>Tedesco</label>
+            <input type="text" id="input-sing" placeholder="Traduci in tedesco..." autocomplete="off" autocorrect="off">
+          </div>
+        `;
+      }
+    } else {
+      // de-it
+      const askArt = document.getElementById('ask-art').checked;
+      const askPlur = document.getElementById('ask-plur').checked;
+
+      let cols = 1;
+      if (askArt && currentVocab && currentVocab.isNoun) cols++;
+      if (askPlur && currentVocab && currentVocab.isNoun) cols++;
+
+      container.className = `inputs-grid ${cols === 3 ? 'triple' : 'single'}`;
+
+      let html = `
+        <div class="input-field">
+          <label>Traduzione Italiana</label>
+          <input type="text" id="input-it" placeholder="Significato in italiano" autocomplete="off">
+        </div>
+      `;
+
+      if (askArt && currentVocab && currentVocab.isNoun) {
+        html += `
+          <div class="input-field">
+            <label>Articolo Tedesco</label>
+            <input type="text" id="input-art" placeholder="der/die/das" autocomplete="off" autocapitalize="none">
+          </div>
+        `;
+      }
+
+      if (askPlur && currentVocab && currentVocab.isNoun) {
+        html += `
+          <div class="input-field">
+            <label>Plurale Tedesco</label>
+            <input type="text" id="input-plur" placeholder="es. -e / x" autocomplete="off">
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    // Registra focus per la digitazione delle lettere speciali
+    const inputs = container.querySelectorAll('input');
+    inputs.forEach(inp => {
+      inp.addEventListener('focus', () => { lastFocusedInput = inp; });
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSubmit();
+      });
+    });
+
+    if (inputs.length > 0) inputs[0].focus();
+  }
+
+  function nextQuestion() {
+    isAnswering = true;
+    currentVocab = selectNextVocab();
+    if (!currentVocab) return;
+
+    const mode = document.getElementById('mode-select').value;
+    const promptType = document.getElementById('prompt-type');
+    const promptWord = document.getElementById('prompt-word');
+    const promptExtra = document.getElementById('prompt-extra');
+    const feedback = document.getElementById('feedback');
+    const submitBtn = document.getElementById('submit-btn');
+
+    feedback.className = 'feedback-box';
+    feedback.style.display = 'none';
+    feedback.innerHTML = '';
+    submitBtn.textContent = 'Verifica';
+
+    if (mode === 'it-de') {
+      promptType.textContent = currentVocab.isNoun ? 'Sostantivo (Richiesto: Articolo, Parola, Plurale)' : 'Vocabolo / Verbo / Frase';
+      promptWord.textContent = currentVocab.italiano;
+      promptExtra.textContent = currentVocab.note || '';
+    } else {
+      promptType.textContent = 'Tedesco ➔ Italiano';
+      promptWord.textContent = currentVocab.singolare;
+      promptExtra.textContent = currentVocab.note ? `Nota: ${currentVocab.note}` : '';
+    }
+
+    renderInputFields();
+  }
+
+  // Normalizza stringhe per confronti più flessibili dove ammesso
+  function clean(str) {
+    return (str || '').trim();
+  }
+
+  function checkPluralMatch(userPlur, targetPlur, targetSing) {
+    userPlur = clean(userPlur).toLowerCase();
+    targetPlur = clean(targetPlur).toLowerCase();
+    
+    // Se non ha plurale (x)
+    if (targetPlur === 'x' || targetPlur === '-' || targetPlur === 'nessuno') {
+      return userPlur === 'x' || userPlur === '-' || userPlur === '' || userPlur === 'nessuno';
+    }
+
+    // Se il target è vuoto o -, significa che il plurale è invariato
+    if (!targetPlur || targetPlur === '-') {
+      return userPlur === '' || userPlur === '-' || userPlur === clean(targetSing).toLowerCase();
+    }
+
+    // Corrispondenza diretta della desinenza (es: "-e" o "¨-e")
+    if (userPlur === targetPlur) return true;
+
+    // Tolleranza per chi scrive senza trattino (es. "e" invece di "-e")
+    if (userPlur.replace(/^-/, '') === targetPlur.replace(/^-/, '')) return true;
+
+    return false;
+  }
+
+  function handleSubmit() {
+    if (!isAnswering) {
+      nextQuestion();
+      return;
+    }
+
+    const mode = document.getElementById('mode-select').value;
+    let isCorrect = true;
+    let errors = [];
+
+    if (!stats[currentVocab.id]) {
+      stats[currentVocab.id] = { wrong: 0, correct: 0, seen: 0 };
+    }
+    stats[currentVocab.id].seen++;
+
+    if (mode === 'it-de') {
+      if (currentVocab.isNoun) {
+        const userArt = clean(document.getElementById('input-art')?.value).toLowerCase();
+        const userSing = clean(document.getElementById('input-sing')?.value);
+        const userPlur = clean(document.getElementById('input-plur')?.value);
+
+        if (userArt !== currentVocab.articolo.toLowerCase()) {
+          isCorrect = false;
+          errors.push(`Articolo sbagliato (Corretto: "${currentVocab.articolo || '-'}")`);
+        }
+
+        // Rigoroso sulle maiuscole per il singolare tedesco
+        if (userSing !== currentVocab.singolare) {
+          isCorrect = false;
+          errors.push(`Singolare non esatto (Corretto: "${currentVocab.singolare}")`);
+        }
+
+        if (!checkPluralMatch(userPlur, currentVocab.plurale, currentVocab.singolare)) {
+          isCorrect = false;
+          errors.push(`Plurale non esatto (Corretto: "${currentVocab.plurale || 'invariato'}")`);
+        }
+      } else {
+        const userSing = clean(document.getElementById('input-sing')?.value);
+        if (userSing.toLowerCase() !== currentVocab.singolare.toLowerCase()) {
+          isCorrect = false;
+          errors.push(`Risposta esatta: "${currentVocab.singolare}"`);
+        }
+      }
+    } else {
+      // de-it
+      const userIt = clean(document.getElementById('input-it')?.value).toLowerCase();
+      const targetIt = clean(currentVocab.italiano).toLowerCase();
+
+      // Accetta se c'è corrispondenza diretta o se è tra le alternative divise da virgola o barra
+      const possibleAnswers = targetIt.split(/[,\/]/).map(s => s.trim().toLowerCase());
+      if (!possibleAnswers.includes(userIt) && userIt !== targetIt) {
+        isCorrect = false;
+        errors.push(`Traduzione non corretta (Atteso: "${currentVocab.italiano}")`);
+      }
+
+      if (document.getElementById('ask-art')?.checked && currentVocab.isNoun) {
+        const userArt = clean(document.getElementById('input-art')?.value).toLowerCase();
+        if (userArt !== currentVocab.articolo.toLowerCase()) {
+          isCorrect = false;
+          errors.push(`Articolo sbagliato: "${currentVocab.articolo}"`);
+        }
+      }
+
+      if (document.getElementById('ask-plur')?.checked && currentVocab.isNoun) {
+        const userPlur = clean(document.getElementById('input-plur')?.value);
+        if (!checkPluralMatch(userPlur, currentVocab.plurale, currentVocab.singolare)) {
+          isCorrect = false;
+          errors.push(`Plurale errato: "${currentVocab.plurale || 'invariato'}"`);
+        }
+      }
+    }
+
+    const feedback = document.getElementById('feedback');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (isCorrect) {
+      stats[currentVocab.id].correct++;
+      feedback.className = 'feedback-box correct';
+      feedback.innerHTML = `🎉 <strong>Perfetto!</strong> Corretto al primo colpo.`;
+    } else {
+      stats[currentVocab.id].wrong++;
+      feedback.className = 'feedback-box wrong';
+      feedback.innerHTML = `
+        ❌ <strong>Da ripassare!</strong>
+        <div class="solution-details">
+          Soluzione completa: 
+          <strong>${currentVocab.articolo ? currentVocab.articolo + ' ' : ''}${currentVocab.singolare}</strong> 
+          ${currentVocab.plurale ? `(Plur: ${currentVocab.plurale})` : ''} ➔ <em>${currentVocab.italiano}</em>
+        </div>
+        <div style="font-size: 0.85rem; margin-top: 4px;">${errors.join(' • ')}</div>
+      `;
+    }
+
+    saveStats();
+    isAnswering = false;
+    submitBtn.textContent = 'Prossima parola ➔';
+  }
+
+  function insertChar(char) {
+    if (!lastFocusedInput) {
+      lastFocusedInput = document.querySelector('.input-field input');
+    }
+    if (lastFocusedInput) {
+      const start = lastFocusedInput.selectionStart || lastFocusedInput.value.length;
+      const end = lastFocusedInput.selectionEnd || lastFocusedInput.value.length;
+      const val = lastFocusedInput.value;
+      lastFocusedInput.value = val.substring(0, start) + char + val.substring(end);
+      lastFocusedInput.focus();
+      lastFocusedInput.setSelectionRange(start + 1, start + 1);
+    }
+  }
+
+  function renderErrorList() {
+    const listEl = document.getElementById('error-list');
+    const sorted = Object.keys(stats)
+      .filter(k => stats[k].wrong > 0)
+      .sort((a, b) => stats[b].wrong - stats[a].wrong)
+      .slice(0, 10);
+
+    if (sorted.length === 0) {
+      listEl.innerHTML = '<li style="color: var(--text-muted); padding: 8px;">Nessun errore registrato finora. Ottimo lavoro!</li>';
+      return;
+    }
+
+    listEl.innerHTML = sorted.map(k => {
+      const v = vocabList.find(item => item.id === k);
+      const title = v ? `${v.articolo ? v.articolo + ' ' : ''}${v.singolare} (${v.italiano})` : k;
+      return `
+        <li class="error-item">
+          <span>${title}</span>
+          <span class="error-badge">${stats[k].wrong} ${stats[k].wrong === 1 ? 'errore' : 'errori'}</span>
+        </li>
+      `;
+    }).join('');
+  }
+
+  // Avvio al caricamento della pagina
+  fetchData();
+</script>
+</body>
+</html>
